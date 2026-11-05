@@ -21,13 +21,98 @@
       padding-bottom: 50px;
     }
 
-    /* מסך שחור / המתנה */
+    /* מסך הגדרות מקדים לקוסם */
+    #setup-screen {
+      position: fixed;
+      inset: 0;
+      background: #121212;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 20px;
+      overflow-y: auto;
+    }
+    .setup-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .setup-subtitle {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+    .setup-card {
+      background: #1e1e1e;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid #2a2a2a;
+    }
+    .setup-card h3 {
+      font-size: 1rem;
+      margin-bottom: 8px;
+      color: #ddd;
+    }
+    .custom-file-upload {
+      display: inline-block;
+      width: 100%;
+      padding: 14px;
+      background: #2a2a2a;
+      color: #0a84ff;
+      text-align: center;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      border: 1px dashed #0a84ff;
+    }
+    .photo-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 12px;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+    .photo-preview-grid img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #333;
+    }
+    .upload-count-text {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-top: 8px;
+    }
+    .start-trick-btn {
+      margin-top: auto;
+      width: 100%;
+      padding: 16px;
+      background: #0a84ff;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(10, 132, 255, 0.3);
+    }
+    .start-trick-btn:active {
+      background: #0070df;
+    }
+
+    /* מסך שחור / המתנה לקסם */
     #black-screen {
       position: fixed;
       inset: 0;
       background: #000;
       z-index: 1000;
-      display: flex;
+      display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
@@ -43,17 +128,6 @@
       margin-top: 15px;
       font-size: 0.85rem;
       color: #333;
-    }
-
-    #upload-btn-label {
-      position: absolute;
-      top: 18px;
-      left: 18px;
-      opacity: 0.2;
-      font-size: 1.1rem;
-      cursor: pointer;
-      z-index: 1010;
-      color: #888;
     }
 
     /* סרגל עליון סמסונג */
@@ -176,7 +250,7 @@
       z-index: 30;
     }
 
-    /* מסך תצוגה מוגדלת */
+    /* תצוגת מסך מלא לתמונה */
     #full-view {
       position: fixed;
       inset: 0;
@@ -210,24 +284,39 @@
 </head>
 <body>
 
-  <div id="black-screen">
-    <label id="upload-btn-label" for="file-input" onclick="event.stopPropagation();">&#128247; בחר תמונות</label>
-    <input type="file" id="file-input" multiple accept="image/*">
+  <!-- מסך הגדרות מקדים (לקוסם בלבד) -->
+  <div id="setup-screen">
+    <div class="setup-title">הגדרות קסם הגלריה</div>
+    <div class="setup-subtitle">העלה את התמונות שלך מהמכשיר כדי שהגלריה תיראה אותנטית. בסיום לחץ על "התחל קסם".</div>
 
-    <div id="clock-display">--:--</div>
-    <div id="status-hint">הקש על המסך להפעלת האזנה</div>
+    <div class="setup-card">
+      <h3>תמונות לגלריה</h3>
+      <label for="file-input" class="custom-file-upload">📷 בחר תמונות מהמכשיר</label>
+      <input type="file" id="file-input" multiple accept="image/*">
+      <div class="upload-count-text" id="upload-summary">לא נבחרו תמונות (יוצגו תמונות דמה אם לא תעלה)</div>
+      <div class="photo-preview-grid" id="preview-grid"></div>
+    </div>
+
+    <button class="start-trick-btn" id="start-btn">התחל קסם והפעל האזנה ➔</button>
   </div>
 
+  <!-- מסך שחור / המתנה לקסם -->
+  <div id="black-screen">
+    <div id="clock-display">--:--</div>
+    <div id="status-hint">מאזין ברקע... הטלפון מוכן</div>
+  </div>
+
+  <!-- סרגל עליון סמסונג -->
   <div class="top-bar">
     <button class="icon-btn">&#10095;</button>
     <div class="top-actions">
-      <label for="file-input" class="icon-btn" style="cursor: pointer;">&#43;</label>
       <button class="icon-btn">&#128269;</button>
       <button class="icon-btn">&#9729;</button>
       <button class="icon-btn">&#8942;</button>
     </div>
   </div>
 
+  <!-- כותרת אלבום סמסונג -->
   <div class="album-header" id="album-cover">
     <div class="album-info">
       <div class="album-title">מצלמה</div>
@@ -235,6 +324,7 @@
     </div>
   </div>
 
+  <!-- גריד התמונות -->
   <div class="gallery-grid" id="gallery-grid">
     <div class="thumb-item" id="magic-thumb" style="display: none;">
       <img id="magic-thumb-img" alt="פתק תחזית">
@@ -263,17 +353,34 @@
   <canvas id="secret-canvas" width="800" height="1000"></canvas>
 
   <script>
-    const ANIMALS = [
-      "אריה", "פיל", "נמר", "קוף", "זברה", "ג'ירפה", "דוב", "שועל", "זאב",
-      "סוס", "כלב", "חתול", "צב", "נשר", "ארנב", "דולפין", "כריש", "גמל",
-      "פינגווין", "תוכי", "עכבר", "חזיר", "תרנגול", "פרה", "כבשה", "צבי",
-      "קרנף", "היפופוטם", "תנין", "קיפוד", "בז", "ינשוף", "ברבור", "אווז"
+    // מאגר ענק ומקיף של חיות, יונקים, עופות, דגים וזוחלים (כולל צורות שונות והטיות)
+    const RAW_ANIMALS = [
+      "אריה", "לביאה", "פיל", "פילונת", "נמר", "נמרה", "קוף", "קופיף", "שימפנזה", "גורילה", "אורנגאוטן", "בבון",
+      "זברה", "ג'ירפה", "גירפה", "דוב", "דובי", "דוב קוטב", "דוב פנדה", "פנדה", "קואלה", "קנגורו",
+      "שועל", "זאב", "תום", "תן", "צבוע", "ברדלס", "צ'יטה", "יגואר", "פומה", "חתול בר",
+      "סוס", "סוסה", "פוני", "חמור", "אתון", "פרד", "גמל", "נאקה", "למה", "אלפקה",
+      "כלב", "כלבה", "כלבלב", "חתול", "חתולה", "חתלתול",
+      "צב", "צבה", "צב ים", "צב יבשה", "נשר", "עיט", "עיטם", "בז", "נץ", "דיה",
+      "ארנב", "ארנבת", "שפן", "אוגר", "חולדה", "עכבר", "עכברוש", "סנאי", "חמוס", "בונה", "קיפוד", "חפרפרת",
+      "דולפין", "לווייתן", "לוויתן", "כריש", "אורקה", "כלב ים", "ארי ים", "ניבתן", "סוס ים", "תמנון", "דיונון", "מדוזה",
+      "פינגווין", "תוכי", "ינשוף", "ינשופית", "תנשמת", "כוס", "עורב", "יונה", "יונת", "דרור", "שחף", "ברבור", "אווז", "ברווז", "שקנאי", "חסידה", "אנפה", "פלמינגו", "טווס", "יען",
+      "חזיר", "חזיר בר", "תרנגול", "תרנגולת", "פרגיות", "פרה", "שור", "עגל", "כבשה", "איל", "טלה", "עז", "גדי", "תיש",
+      "צבי", "אייל", "יחמור", "ראם", "יעל", "קרנף", "היפופוטם", "סוס יאור",
+      "תנין", "אליגטור", "לטאה", "שממית", "חרדון", "זיקית", "איגואנה", "נחש", "צפע", "קוברה", "פיתון", "אנמי", "אנמיקה", "קרפדה", "צפרדע", "סלמנדרה"
     ];
+
+    // יצירת רשימה הכוללת גם מילים עם "ה" הידיעה (הפיל, האריה, הזברה וכו')
+    const ANIMAL_SET = new Set();
+    RAW_ANIMALS.forEach(a => {
+      ANIMAL_SET.add(a);
+      ANIMAL_SET.add("ה" + a);
+    });
 
     let currentWord = "";
     let isListening = false;
     let userPhotos = [];
 
+    // עדכון שעון
     function updateClock() {
       const now = new Date();
       document.getElementById('clock-display').innerText = 
@@ -282,22 +389,55 @@
     setInterval(updateClock, 1000);
     updateClock();
 
+    // בחירת תמונות במסך ההגדרות
     const fileInput = document.getElementById('file-input');
+    const previewGrid = document.getElementById('preview-grid');
+    const uploadSummary = document.getElementById('upload-summary');
+
     fileInput.addEventListener('change', (e) => {
       const files = Array.from(e.target.files);
       if (!files.length) return;
 
+      userPhotos = [];
+      previewGrid.innerHTML = '';
+
+      let loaded = 0;
       files.forEach((file) => {
         const reader = new FileReader();
         reader.onload = (event) => {
           userPhotos.push(event.target.result);
-          renderUserPhotos();
+          
+          const img = document.createElement('img');
+          img.src = event.target.result;
+          previewGrid.appendChild(img);
+
+          loaded++;
+          uploadSummary.innerText = `נטענו ${loaded} מתוך ${files.length} תמונות`;
+          if (loaded === files.length) {
+            renderGalleryItems();
+          }
         };
         reader.readAsDataURL(file);
       });
     });
 
-    function renderUserPhotos() {
+    // כפתור התחל קסם
+    document.getElementById('start-btn').addEventListener('click', () => {
+      if (userPhotos.length === 0) {
+        for (let i = 11; i <= 22; i++) {
+          userPhotos.push(`https://picsum.photos/400/400?random=${i}`);
+        }
+        renderGalleryItems();
+      }
+
+      document.getElementById('setup-screen').style.display = 'none';
+      const blackScreen = document.getElementById('black-screen');
+      blackScreen.style.display = 'flex';
+
+      startListening();
+    });
+
+    function renderGalleryItems() {
       const grid = document.getElementById('gallery-grid');
       const magicThumb = document.getElementById('magic-thumb');
       grid.innerHTML = '';
@@ -323,16 +463,7 @@
       document.getElementById('media-count').innerText = `${totalCount} תמונות`;
     }
 
-    const blackScreen = document.getElementById('black-screen');
-    blackScreen.addEventListener('click', () => {
-      if (!isListening) {
-        startListening();
-        document.getElementById('status-hint').innerText = "מאזין ברקע... המתן לדיבור";
-      } else {
-        blackScreen.style.display = 'none';
-      }
-    });
-
+    // מנוע זיהוי קולי
     function startListening() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
@@ -352,7 +483,7 @@
         }
       };
 
-      recognition.onerror = () => setTimeout(() => { try { recognition.start(); } catch(err){} }, 500);
+      recognition.onerror = () => setTimeout(() => { try { recognition.start(); } catch(err){} }, 400);
       recognition.onend = () => { if (isListening) { try { recognition.start(); } catch(err){} } };
 
       try {
@@ -361,20 +492,49 @@
       } catch(err){}
     }
 
+    // ניתוח שמע מתקדם: בודק מתוך מאגר + חילוץ מילים חכם
     function handleSpokenText(spokenText) {
-      for (let animal of ANIMALS) {
-        if (spokenText.includes(animal)) {
-          if (currentWord !== animal) {
-            currentWord = animal;
-            renderSecretPhoto(animal);
-            blackScreen.style.display = 'none'; // מעבר אוטומטי מיידי לגלריה
-            if (navigator.vibrate) navigator.vibrate(70);
-          }
+      const clean = spokenText.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
+      const words = clean.split(/\s+/);
+      let detectedAnimal = null;
+
+      // 1. בדיקה ישירה מול מאגר החיות הרחב
+      for (let word of words) {
+        if (ANIMAL_SET.has(word)) {
+          detectedAnimal = word.startsWith("ה") && word.length > 2 ? word.substring(1) : word;
           break;
         }
       }
+
+      // 2. מנגנון חילוץ חכם אם נאמרה חיה נדירה אחרי ביטוי בחירה
+      if (!detectedAnimal) {
+        const triggers = ["בחרתי", "חשבתי על", "אמרתי", "החיה היא", "זאת", "זה", "רוצה"];
+        for (let trig of triggers) {
+          if (clean.includes(trig)) {
+            const parts = clean.split(trig);
+            if (parts.length > 1) {
+              const after = parts[parts.length - 1].trim().split(/\s+/);
+              if (after[0] && after[0].length >= 2) {
+                let candidate = after[0];
+                if (candidate.startsWith("ה") && candidate.length > 2) candidate = candidate.substring(1);
+                detectedAnimal = candidate;
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      // הפעלת האפקט אם זוהתה מילה חדשה
+      if (detectedAnimal && currentWord !== detectedAnimal) {
+        currentWord = detectedAnimal;
+        renderSecretPhoto(detectedAnimal);
+        document.getElementById('black-screen').style.display = 'none';
+        if (navigator.vibrate) navigator.vibrate(70);
+      }
     }
 
+    // יצירת תמונת הפתק
     function renderSecretPhoto(word) {
       const canvas = document.getElementById('secret-canvas');
       const ctx = canvas.getContext('2d');
