@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>גלריה</title>
   <style>
     * {
@@ -10,26 +10,31 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      -webkit-user-select: none;
     }
     body {
       background-color: #000;
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Samsung Sans", sans-serif;
       overflow-x: hidden;
-      padding-bottom: 50px;
+      padding-bottom: 20px;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
+    /* מסך הגדרות מקדים לקוסם */
     #setup-screen {
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       background: #121212;
-      z-index: 2000;
+      z-index: 99999;
       display: flex;
       flex-direction: column;
       padding: 24px 20px;
       overflow-y: auto;
+      pointer-events: auto;
     }
     .setup-title {
       font-size: 1.5rem;
@@ -40,7 +45,7 @@
     .setup-subtitle {
       font-size: 0.9rem;
       color: #888;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       line-height: 1.4;
     }
     .setup-card {
@@ -52,27 +57,55 @@
     }
     .setup-card h3 {
       font-size: 1rem;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       color: #ddd;
     }
-    .custom-file-upload {
-      display: inline-block;
+    .upload-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
       width: 100%;
-      padding: 14px;
-      background: #2a2a2a;
-      color: #0a84ff;
+      padding: 16px;
+      background: #0a84ff;
+      color: #fff;
       text-align: center;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 1rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1.1rem;
       cursor: pointer;
-      border: 1px dashed #0a84ff;
+      border: none;
+      outline: none;
+      pointer-events: auto;
+    }
+    .upload-btn:active {
+      background: #0070df;
+      transform: scale(0.98);
+    }
+    .clear-btn {
+      margin-top: 10px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      color: #ccc;
+      padding: 10px;
+      width: 100%;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+    .upload-count-text {
+      font-size: 0.95rem;
+      color: #34c759;
+      margin-top: 12px;
+      font-weight: 600;
+      text-align: center;
     }
     .photo-preview-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 6px;
-      margin-top: 12px;
+      margin-top: 14px;
       max-height: 160px;
       overflow-y: auto;
     }
@@ -81,40 +114,43 @@
       aspect-ratio: 1;
       object-fit: cover;
       border-radius: 6px;
-      background: #333;
-    }
-    .upload-count-text {
-      font-size: 0.85rem;
-      color: #aaa;
-      margin-top: 8px;
+      background: #2a2a2a;
     }
     .start-trick-btn {
       margin-top: auto;
       width: 100%;
-      padding: 16px;
-      background: #0a84ff;
+      padding: 18px;
+      background: #34c759;
       color: #fff;
       border: none;
-      border-radius: 12px;
-      font-size: 1.1rem;
+      border-radius: 14px;
+      font-size: 1.25rem;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(10, 132, 255, 0.3);
+      box-shadow: 0 4px 15px rgba(52, 199, 89, 0.3);
+      outline: none;
+      pointer-events: auto;
     }
     .start-trick-btn:active {
-      background: #0070df;
+      background: #28a745;
+      transform: scale(0.98);
     }
 
+    /* מסך שחור / Always On Display */
     #black-screen {
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       background: #000;
-      z-index: 1000;
+      z-index: 10000;
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      pointer-events: auto;
     }
     #clock-display {
       font-size: 3.5rem;
@@ -125,72 +161,114 @@
     #status-hint {
       margin-top: 15px;
       font-size: 0.85rem;
-      color: #333;
+      color: #666;
+      text-align: center;
+      padding: 0 20px;
     }
 
-    .top-bar {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 60px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 16px;
-      z-index: 10;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
-    }
-    .top-actions {
-      display: flex;
-      gap: 18px;
-      align-items: center;
-    }
-    .icon-btn {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 1.3rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .album-header {
+    /* סרגל עליון סמסונג */
+    .samsung-header {
       position: relative;
-      height: 280px;
+      height: 380px;
       background-size: cover;
-      background-position: center;
-      background-color: #222;
+      background-position: center 30%;
+      background-repeat: no-repeat;
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      padding: 20px 18px;
+      padding: 24px 18px 20px;
     }
-    .album-header::after {
+    .samsung-header::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, #000 5%, rgba(0,0,0,0.4) 60%, transparent 100%);
+      background: linear-gradient(to top, rgba(0,0,0,0.95) 5%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.4) 100%);
     }
+
+    .top-controls {
+      position: absolute;
+      top: 38px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .pill-menu {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 9px 18px;
+      border-radius: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .pill-icon {
+      color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .pill-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: #000;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .round-back-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .round-back-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: #000;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
     .album-info {
       position: relative;
       z-index: 2;
+      text-align: center;
+      margin-bottom: 8px;
     }
     .album-title {
-      font-size: 2.1rem;
+      font-size: 2.3rem;
       font-weight: 700;
       color: #fff;
-      line-height: 1.2;
+      letter-spacing: -0.5px;
     }
     .album-count {
-      font-size: 0.95rem;
-      color: #ccc;
+      font-size: 1.05rem;
+      color: #eee;
       margin-top: 4px;
-      font-weight: 400;
+      font-weight: 500;
     }
 
+    /* גריד התמונות */
     .gallery-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -200,7 +278,7 @@
     .thumb-item {
       position: relative;
       aspect-ratio: 1;
-      background: #1a1a1a;
+      background: #111;
       overflow: hidden;
       cursor: pointer;
     }
@@ -211,54 +289,50 @@
       display: block;
     }
 
-    .scroll-fab {
-      position: fixed;
-      bottom: 60px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.9);
-      color: #000;
+    .video-tag {
+      position: absolute;
+      bottom: 5px;
+      left: 6px;
+      font-size: 0.75rem;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.55);
+      padding: 1px 5px;
+      border-radius: 4px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-      font-size: 1.2rem;
-      z-index: 20;
+      gap: 3px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
     }
 
-    .nav-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 44px;
-      background: #000;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      color: #777;
-      font-size: 1.1rem;
-      border-top: 1px solid #111;
-      z-index: 30;
-    }
-
+    /* מסך תצוגה מוגדלת */
     #full-view {
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       background: #000;
-      z-index: 500;
+      z-index: 3000;
       display: none;
       flex-direction: column;
     }
     .full-top {
-      padding: 16px;
+      padding: 16px 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: rgba(0,0,0,0.7);
+    }
+    .full-back-btn {
+      color: #fff;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      background: none;
     }
     .full-img-wrap {
       flex: 1;
@@ -273,76 +347,94 @@
     }
 
     #secret-canvas { display: none; }
-    #file-input { display: none; }
   </style>
 </head>
 <body>
 
+  <!-- מסך הגדרות מקדים -->
   <div id="setup-screen">
     <div class="setup-title">הגדרות קסם הגלריה</div>
-    <div class="setup-subtitle">מאגר החיות מכיל מעל 800 שמות והטיות. העלה תמונות מהמכשיר ולחץ "התחל קסם".</div>
+    <div class="setup-subtitle">בחר את התמונות הרצויות, הגדר מיקום ולחץ על "התחל קסם".</div>
 
     <div class="setup-card">
-      <h3>תמונות לגלריה</h3>
-      <label for="file-input" class="custom-file-upload">📷 בחר תמונות מהמכשיר</label>
-      <input type="file" id="file-input" multiple accept="image/*">
-      <div class="upload-count-text" id="upload-summary">לא נבחרו תמונות (יוטענו תמונות דמה אם תמשיך ללא בחירה)</div>
+      <h3>מיקום תמונת הפתק בגלריה</h3>
+      <select id="magic-pos-select" style="width: 100%; padding: 12px; background: #2a2a2a; color: #fff; border: 1px solid #444; border-radius: 8px; font-size: 1rem;">
+        <option value="3">תמונה מספר 4 (שורה שנייה מימין)</option>
+        <option value="4" selected>תמונה מספר 5 (שורה שנייה באמצע)</option>
+        <option value="6">תמונה מספר 7 (שורה שלישית מימין)</option>
+        <option value="7">תמונה מספר 8 (שורה שלישית באמצע)</option>
+        <option value="1">תמונה מספר 2 (אחרי הראשונה)</option>
+      </select>
+    </div>
+
+    <div class="setup-card">
+      <h3>העלאת תמונות</h3>
+      <input type="file" id="real-file-input" multiple style="display: none;">
+      
+      <button class="upload-btn" id="upload-trigger-btn" type="button">
+        ➕ בחר תמונות מהמכשיר
+      </button>
+      
+      <button class="clear-btn" id="clear-photos-btn" type="button">🗑️ אפס לברירת מחדל</button>
+      <div class="upload-count-text" id="upload-summary">מוכנות תמונות ברירת מחדל</div>
       <div class="photo-preview-grid" id="preview-grid"></div>
     </div>
 
-    <button class="start-trick-btn" id="start-btn">התחל קסם והפעל האזנה ➔</button>
+    <button class="start-trick-btn" id="start-btn" type="button">התחל קסם והפעל האזנה ➔</button>
   </div>
 
+  <!-- מסך שחור / Always On Display -->
   <div id="black-screen">
     <div id="clock-display">--:--</div>
-    <div id="status-hint">מאזין ברקע... הטלפון מוכן</div>
+    <div id="status-hint">מאתחל האזנה...</div>
   </div>
 
-  <div class="top-bar">
-    <button class="icon-btn">&#10095;</button>
-    <div class="top-actions">
-      <button class="icon-btn">&#128269;</button>
-      <button class="icon-btn">&#9729;</button>
-      <button class="icon-btn">&#8942;</button>
+  <!-- כותרת ראשית סמסונג One UI -->
+  <div class="samsung-header" id="album-cover">
+    <div class="top-controls">
+      <div class="pill-menu">
+        <div class="pill-icon" style="font-weight: bold; font-size: 1.4rem;">&#8942;</div>
+        <div class="pill-icon">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div class="pill-icon">
+          <svg viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+        </div>
+      </div>
+
+      <div class="round-back-btn">
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
     </div>
-  </div>
 
-  <div class="album-header" id="album-cover">
     <div class="album-info">
       <div class="album-title">מצלמה</div>
-      <div class="album-count" id="media-count">0 תמונות</div>
+      <div class="album-count" id="media-count">316 תמונות 51 סרטונים</div>
     </div>
   </div>
 
+  <!-- גריד תמונות -->
   <div class="gallery-grid" id="gallery-grid">
     <div class="thumb-item" id="magic-thumb" style="display: none;">
       <img id="magic-thumb-img" alt="פתק תחזית">
     </div>
   </div>
 
-  <div class="scroll-fab">&#8679;</div>
-
-  <div class="nav-bar">
-    <span>|||</span>
-    <span>&#9633;</span>
-    <span>&lt;</span>
-  </div>
-
+  <!-- תצוגת מסך מלא -->
   <div id="full-view">
     <div class="full-top">
-      <button class="icon-btn" id="close-full">&#10095; חזרה</button>
+      <button class="full-back-btn" id="close-full">&#10095; חזרה</button>
       <span style="font-size: 0.85rem; color: #aaa;">אתמול, 20:41</span>
-      <button class="icon-btn">&#8942;</button>
+      <span style="width: 40px;"></span>
     </div>
     <div class="full-img-wrap">
-      <img id="full-img">
+      <img id="full-img" alt="תמונה">
     </div>
   </div>
 
   <canvas id="secret-canvas" width="800" height="1000"></canvas>
 
   <script>
-    // מאגר מלא ומשולב של מעל 860 שמות והטיות
     const RAW_ANIMALS = [
       "אריה", "לביאה", "אריות", "כפיר", "ליגֶר", "טיגריס", "טיגריסית", "טיגריסים", "טיגר", "נמר", "נמרה", "נמרים",
       "ברדלס", "צ'יטה", "ציטה", "יגואר", "פומה", "פנתר", "פנתר שחור", "אוצלוט", "קרקל", "לינקס", "חתול בר",
@@ -396,6 +488,20 @@
     let currentWord = "";
     let isListening = false;
     let userPhotos = [];
+    let magicPosition = 4;
+    let hasCustomPhotos = false;
+
+    function loadDefaultPhotos() {
+      userPhotos = [];
+      for (let i = 1; i <= 24; i++) {
+        userPhotos.push({
+          src: `https://picsum.photos/400/400?random=${i + 40}`,
+          isVideo: [2, 5, 8, 12, 17].includes(i),
+          duration: [2, 5, 8, 12, 17].includes(i) ? (i === 2 ? '0:03' : i === 5 ? '0:06' : i === 8 ? '0:23' : i === 12 ? '0:41' : '0:09') : null
+        });
+      }
+    }
+    loadDefaultPhotos();
 
     function updateClock() {
       const now = new Date();
@@ -405,104 +511,179 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    const fileInput = document.getElementById('file-input');
+    const realFileInput = document.getElementById('real-file-input');
+    const uploadTriggerBtn = document.getElementById('upload-trigger-btn');
     const previewGrid = document.getElementById('preview-grid');
     const uploadSummary = document.getElementById('upload-summary');
+    const clearBtn = document.getElementById('clear-photos-btn');
 
-    fileInput.addEventListener('change', (e) => {
-      const files = Array.from(e.target.files);
-      if (!files.length) return;
+    // פתיחת בחירת קבצים בצורה אמינה
+    function openFilePicker() {
+      realFileInput.value = '';
+      realFileInput.click();
+    }
+    uploadTriggerBtn.addEventListener('click', openFilePicker);
 
-      userPhotos = [];
+    clearBtn.addEventListener('click', () => {
+      hasCustomPhotos = false;
+      loadDefaultPhotos();
       previewGrid.innerHTML = '';
-
-      let loaded = 0;
-      files.forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          userPhotos.push(event.target.result);
-          
-          const img = document.createElement('img');
-          img.src = event.target.result;
-          previewGrid.appendChild(img);
-
-          loaded++;
-          uploadSummary.innerText = `נטענו ${loaded} מתוך ${files.length} תמונות`;
-          if (loaded === files.length) {
-            renderGalleryItems();
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+      uploadSummary.innerText = "התמונות אופסו לברירת מחדל.";
+      renderGalleryItems();
     });
 
-    document.getElementById('start-btn').addEventListener('click', () => {
-      if (userPhotos.length === 0) {
-        for (let i = 11; i <= 22; i++) {
-          userPhotos.push(`https://picsum.photos/400/400?random=${i}`);
-        }
-        renderGalleryItems();
+    realFileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      if (!files || files.length === 0) return;
+
+      if (!hasCustomPhotos) {
+        userPhotos = [];
+        previewGrid.innerHTML = '';
+        hasCustomPhotos = true;
       }
+
+      files.forEach((file) => {
+        try {
+          const blobUrl = URL.createObjectURL(file);
+          userPhotos.push({
+            src: blobUrl,
+            isVideo: false,
+            duration: null
+          });
+
+          const img = document.createElement('img');
+          img.src = blobUrl;
+          previewGrid.appendChild(img);
+        } catch(err) {
+          console.error(err);
+        }
+      });
+
+      uploadSummary.innerText = `נוספו תמונות! סה"כ בגלריה: ${userPhotos.length}`;
+      renderGalleryItems();
+    });
+
+    const startBtn = document.getElementById('start-btn');
+    
+    // פונקציית התחלת הקסם בצורה נקייה וסגורה
+    function handleStart() {
+      const posSelect = document.getElementById('magic-pos-select');
+      if (posSelect) {
+        magicPosition = parseInt(posSelect.value, 10);
+      }
+      renderGalleryItems();
 
       document.getElementById('setup-screen').style.display = 'none';
       const blackScreen = document.getElementById('black-screen');
       blackScreen.style.display = 'flex';
 
-      startListening();
+      setTimeout(startListening, 300);
+    }
+
+    startBtn.addEventListener('click', handleStart);
+
+    // הקשה על המסך השחור חושפת את הגלריה
+    const blackScreen = document.getElementById('black-screen');
+    blackScreen.addEventListener('click', () => {
+      blackScreen.style.display = 'none';
     });
 
     function renderGalleryItems() {
       const grid = document.getElementById('gallery-grid');
       const magicThumb = document.getElementById('magic-thumb');
       grid.innerHTML = '';
-      grid.appendChild(magicThumb);
 
-      userPhotos.forEach((src) => {
-        const item = document.createElement('div');
-        item.className = 'thumb-item';
+      const targetPos = Math.min(magicPosition, userPhotos.length);
+      const isMagicActive = magicThumb.style.display !== 'none';
+
+      userPhotos.forEach((item, index) => {
+        if (isMagicActive && index === targetPos) {
+          grid.appendChild(magicThumb);
+        }
+
+        const el = document.createElement('div');
+        el.className = 'thumb-item';
+        
         const img = document.createElement('img');
-        img.src = src;
-        item.appendChild(img);
-        item.onclick = () => {
-          document.getElementById('full-img').src = src;
+        img.src = item.src;
+        el.appendChild(img);
+
+        if (item.isVideo && item.duration) {
+          const tag = document.createElement('span');
+          tag.className = 'video-tag';
+          tag.innerHTML = `&#9654; ${item.duration}`;
+          el.appendChild(tag);
+        }
+
+        el.onclick = () => {
+          document.getElementById('full-img').src = item.src;
           document.getElementById('full-view').style.display = 'flex';
         };
-        grid.appendChild(item);
+        grid.appendChild(el);
       });
 
-      if (userPhotos.length > 0) {
-        document.getElementById('album-cover').style.backgroundImage = `url('${userPhotos[0]}')`;
+      if (isMagicActive && targetPos >= userPhotos.length) {
+        grid.appendChild(magicThumb);
       }
-      const totalCount = userPhotos.length + (magicThumb.style.display !== 'none' ? 1 : 0);
-      document.getElementById('media-count').innerText = `${totalCount} תמונות`;
+
+      if (userPhotos.length > 0) {
+        document.getElementById('album-cover').style.backgroundImage = `url('${userPhotos[0].src}')`;
+      }
+      const totalCount = userPhotos.length + (isMagicActive ? 1 : 0);
+      document.getElementById('media-count').innerText = `${totalCount} תמונות 51 סרטונים`;
     }
 
+    renderGalleryItems();
+
     function startListening() {
+      const statusHint = document.getElementById('status-hint');
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
       if (!SpeechRecognition) {
-        alert("דפדפן זה אינו תומך בזיהוי קולי. יש להשתמש ב-Chrome בחיבור HTTPS.");
+        statusHint.innerText = "זיהוי קולי לא נתמך בדפדפן זה. גע במסך לפתיחה.";
         return;
       }
 
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'he-IL';
-      recognition.continuous = true;
-      recognition.interimResults = true;
-
-      recognition.onresult = (e) => {
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          const text = e.results[i][0].transcript.trim();
-          handleSpokenText(text);
-        }
-      };
-
-      recognition.onerror = () => setTimeout(() => { try { recognition.start(); } catch(err){} }, 400);
-      recognition.onend = () => { if (isListening) { try { recognition.start(); } catch(err){} } };
-
       try {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'he-IL';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onstart = () => {
+          isListening = true;
+          statusHint.innerText = "מאזין ברקע... הטלפון מוכן על השולחן";
+        };
+
+        recognition.onresult = (e) => {
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            const text = e.results[i][0].transcript.trim();
+            handleSpokenText(text);
+          }
+        };
+
+        recognition.onerror = (err) => {
+          console.warn("Speech recognition notice:", err.error);
+          if (err.error === 'not-allowed') {
+            statusHint.innerText = "הרשאת מיקרופון נדחתה. גע במסך לפתיחה.";
+          } else {
+            setTimeout(() => {
+              try { if (isListening) recognition.start(); } catch(e){}
+            }, 800);
+          }
+        };
+
+        recognition.onend = () => {
+          if (isListening) {
+            try { recognition.start(); } catch(e){}
+          }
+        };
+
         recognition.start();
-        isListening = true;
-      } catch(err){}
+      } catch (err) {
+        console.error("Recognition start error:", err);
+        statusHint.innerText = "שגיאה באתחול מיקרופון. גע במסך לפתיחה.";
+      }
     }
 
     function handleSpokenText(spokenText) {
@@ -510,7 +691,6 @@
       const words = clean.split(/\s+/);
       let detectedAnimal = null;
 
-      // 1. בדיקת ביטויים של 2 מילים (כמו "דוב קוטב", "פרת משה רבנו")
       for (let i = 0; i < words.length - 1; i++) {
         const pair = words[i] + " " + words[i+1];
         if (ANIMAL_SET.has(pair)) {
@@ -519,7 +699,6 @@
         }
       }
 
-      // 2. בדיקת מילה בודדת מתוך המאגר
       if (!detectedAnimal) {
         for (let word of words) {
           if (ANIMAL_SET.has(word)) {
@@ -529,7 +708,6 @@
         }
       }
 
-      // 3. חילוץ הקשרי ממשפטים חופשיים
       if (!detectedAnimal) {
         const triggers = ["בחרתי", "חשבתי על", "אמרתי", "החיה היא", "זאת", "זה", "רוצה"];
         for (let trig of triggers) {
@@ -548,9 +726,15 @@
         }
       }
 
-      if (detectedAnimal && currentWord !== detectedAnimal) {
-        currentWord = detectedAnimal;
-        renderSecretPhoto(detectedAnimal);
+      if (detectedAnimal) {
+        triggerMagicWord(detectedAnimal);
+      }
+    }
+
+    function triggerMagicWord(word) {
+      if (currentWord !== word) {
+        currentWord = word;
+        renderSecretPhoto(word);
         document.getElementById('black-screen').style.display = 'none';
         if (navigator.vibrate) navigator.vibrate(70);
       }
@@ -599,8 +783,7 @@
       thumbImg.src = dataUrl;
       thumb.style.display = 'block';
 
-      const totalCount = userPhotos.length + 1;
-      document.getElementById('media-count').innerText = `${totalCount} תמונות`;
+      renderGalleryItems();
 
       thumb.onclick = () => {
         document.getElementById('full-img').src = dataUrl;
