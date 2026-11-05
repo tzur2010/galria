@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>גלריה</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Samsung Sans", sans-serif;
+      overflow-x: hidden;
+      padding-bottom: 50px;
+    }
+
+    /* מסך שחור / המתנה */
+    #black-screen {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    #clock-display {
+      font-size: 3.5rem;
+      font-weight: 200;
+      color: #444;
+      letter-spacing: 2px;
+    }
+    #status-hint {
+      margin-top: 15px;
+      font-size: 0.85rem;
+      color: #333;
+    }
+
+    #upload-btn-label {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      opacity: 0.2;
+      font-size: 1.1rem;
+      cursor: pointer;
+      z-index: 1010;
+      color: #888;
+    }
+
+    /* סרגל עליון סמסונג */
+    .top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      z-index: 10;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
+    }
+    .top-actions {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+    }
+    .icon-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* כותרת אלבום סמסונג */
+    .album-header {
+      position: relative;
+      height: 280px;
+      background-size: cover;
+      background-position: center;
+      background-color: #222;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 20px 18px;
+    }
+    .album-header::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, #000 5%, rgba(0,0,0,0.4) 60%, transparent 100%);
+    }
+    .album-info {
+      position: relative;
+      z-index: 2;
+    }
+    .album-title {
+      font-size: 2.1rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .album-count {
+      font-size: 0.95rem;
+      color: #ccc;
+      margin-top: 4px;
+      font-weight: 400;
+    }
+
+    /* גריד התמונות */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background-color: #000;
+    }
+    .thumb-item {
+      position: relative;
+      aspect-ratio: 1;
+      background: #1a1a1a;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .thumb-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .scroll-fab {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      font-size: 1.2rem;
+      z-index: 20;
+    }
+
+    .nav-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 44px;
+      background: #000;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      color: #777;
+      font-size: 1.1rem;
+      border-top: 1px solid #111;
+      z-index: 30;
+    }
+
+    /* מסך תצוגה מוגדלת */
+    #full-view {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 500;
+      display: none;
+      flex-direction: column;
+    }
+    .full-top {
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0,0,0,0.7);
+    }
+    .full-img-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .full-img-wrap img {
+      max-width: 100%;
+      max-height: 85vh;
+      object-fit: contain;
+    }
+
+    #secret-canvas { display: none; }
+    #file-input { display: none; }
+  </style>
+</head>
+<body>
+
+  <div id="black-screen">
+    <label id="upload-btn-label" for="file-input" onclick="event.stopPropagation();">&#128247; בחר תמונות</label>
+    <input type="file" id="file-input" multiple accept="image/*">
+
+    <div id="clock-display">--:--</div>
+    <div id="status-hint">הקש על המסך להפעלת האזנה</div>
+  </div>
+
+  <div class="top-bar">
+    <button class="icon-btn">&#10095;</button>
+    <div class="top-actions">
+      <label for="file-input" class="icon-btn" style="cursor: pointer;">&#43;</label>
+      <button class="icon-btn">&#128269;</button>
+      <button class="icon-btn">&#9729;</button>
+      <button class="icon-btn">&#8942;</button>
+    </div>
+  </div>
+
+  <div class="album-header" id="album-cover">
+    <div class="album-info">
+      <div class="album-title">מצלמה</div>
+      <div class="album-count" id="media-count">0 תמונות</div>
+    </div>
+  </div>
+
+  <div class="gallery-grid" id="gallery-grid">
+    <div class="thumb-item" id="magic-thumb" style="display: none;">
+      <img id="magic-thumb-img" alt="פתק תחזית">
+    </div>
+  </div>
+
+  <div class="scroll-fab">&#8679;</div>
+
+  <div class="nav-bar">
+    <span>|||</span>
+    <span>&#9633;</span>
+    <span>&lt;</span>
+  </div>
+
+  <div id="full-view">
+    <div class="full-top">
+      <button class="icon-btn" id="close-full">&#10095; חזרה</button>
+      <span style="font-size: 0.85rem; color: #aaa;">אתמול, 20:41</span>
+      <button class="icon-btn">&#8942;</button>
+    </div>
+    <div class="full-img-wrap">
+      <img id="full-img">
+    </div>
+  </div>
+
+  <canvas id="secret-canvas" width="800" height="1000"></canvas>
+
+  <script>
+    const ANIMALS = [
+      "אריה", "פיל", "נמר", "קוף", "זברה", "ג'ירפה", "דוב", "שועל", "זאב",
+      "סוס", "כלב", "חתול", "צב", "נשר", "ארנב", "דולפין", "כריש", "גמל",
+      "פינגווין", "תוכי", "עכבר", "חזיר", "תרנגול", "פרה", "כבשה", "צבי",
+      "קרנף", "היפופוטם", "תנין", "קיפוד", "בז", "ינשוף", "ברבור", "אווז"
+    ];
+
+    let currentWord = "";
+    let isListening = false;
+    let userPhotos = [];
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock-display').innerText = 
+        String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    const fileInput = document.getElementById('file-input');
+    fileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+
+      files.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          userPhotos.push(event.target.result);
+          renderUserPhotos();
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    function renderUserPhotos() {
+      const grid = document.getElementById('gallery-grid');
+      const magicThumb = document.getElementById('magic-thumb');
+      grid.innerHTML = '';
+      grid.appendChild(magicThumb);
+
+      userPhotos.forEach((src) => {
+        const item = document.createElement('div');
+        item.className = 'thumb-item';
+        const img = document.createElement('img');
+        img.src = src;
+        item.appendChild(img);
+        item.onclick = () => {
+          document.getElementById('full-img').src = src;
+          document.getElementById('full-view').style.display = 'flex';
+        };
+        grid.appendChild(item);
+      });
+
+      if (userPhotos.length > 0) {
+        document.getElementById('album-cover').style.backgroundImage = `url('${userPhotos[0]}')`;
+      }
+      const totalCount = userPhotos.length + (magicThumb.style.display !== 'none' ? 1 : 0);
+      document.getElementById('media-count').innerText = `${totalCount} תמונות`;
+    }
+
+    const blackScreen = document.getElementById('black-screen');
+    blackScreen.addEventListener('click', () => {
+      if (!isListening) {
+        startListening();
+        document.getElementById('status-hint').innerText = "מאזין ברקע... המתן לדיבור";
+      } else {
+        blackScreen.style.display = 'none';
+      }
+    });
+
+    function startListening() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("דפדפן זה אינו תומך בזיהוי קולי. יש להשתמש ב-Chrome בחיבור HTTPS.");
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'he-IL';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognition.onresult = (e) => {
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const text = e.results[i][0].transcript.trim();
+          handleSpokenText(text);
+        }
+      };
+
+      recognition.onerror = () => setTimeout(() => { try { recognition.start(); } catch(err){} }, 500);
+      recognition.onend = () => { if (isListening) { try { recognition.start(); } catch(err){} } };
+
+      try {
+        recognition.start();
+        isListening = true;
+      } catch(err){}
+    }
+
+    function handleSpokenText(spokenText) {
+      for (let animal of ANIMALS) {
+        if (spokenText.includes(animal)) {
+          if (currentWord !== animal) {
+            currentWord = animal;
+            renderSecretPhoto(animal);
+            blackScreen.style.display = 'none'; // מעבר אוטומטי מיידי לגלריה
+            if (navigator.vibrate) navigator.vibrate(70);
+          }
+          break;
+        }
+      }
+    }
+
+    function renderSecretPhoto(word) {
+      const canvas = document.getElementById('secret-canvas');
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#f8f1de';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = '#e0d5be';
+      ctx.lineWidth = 2;
+      for (let y = 140; y < canvas.height; y += 60) {
+        ctx.beginPath();
+        ctx.moveTo(30, y);
+        ctx.lineTo(canvas.width - 30, y);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = '#f3bcbc';
+      ctx.beginPath();
+      ctx.moveTo(canvas.width - 110, 0);
+      ctx.lineTo(canvas.width - 110, canvas.height);
+      ctx.stroke();
+
+      ctx.fillStyle = '#666';
+      ctx.font = '24px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('תזכורת / תחזית:', canvas.width - 130, 200);
+
+      ctx.save();
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate(-0.05);
+      ctx.fillStyle = '#102a6b';
+      ctx.font = 'bold 88px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(word, 0, 0);
+      ctx.restore();
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+      const thumb = document.getElementById('magic-thumb');
+      const thumbImg = document.getElementById('magic-thumb-img');
+      thumbImg.src = dataUrl;
+      thumb.style.display = 'block';
+
+      const totalCount = userPhotos.length + 1;
+      document.getElementById('media-count').innerText = `${totalCount} תמונות`;
+
+      thumb.onclick = () => {
+        document.getElementById('full-img').src = dataUrl;
+        document.getElementById('full-view').style.display = 'flex';
+      };
+    }
+
+    document.getElementById('close-full').onclick = () => {
+      document.getElementById('full-view').style.display = 'none';
+    };
+  </script>
+</body>
+</html>
